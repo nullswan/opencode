@@ -299,7 +299,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           const client = sdk.client
           const [store, setStore] = globalSync.child(directory)
           if (store.coord[sessionID] !== undefined) return
-          if (store.config.experimental?.coord !== true) return
+          if ((store.config.experimental as { coord?: boolean } | undefined)?.coord !== true) return
 
           const key = keyFor(directory, sessionID)
           const pending = inflightCoord.get(key)

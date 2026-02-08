@@ -888,7 +888,9 @@ export default function Page() {
   }
 
   const contextOpen = createMemo(() => tabs().active() === "context" || tabs().all().includes("context"))
-  const workersEnabled = createMemo(() => sync.data.config.experimental?.coord === true)
+  const workersEnabled = createMemo(
+    () => (sync.data.config.experimental as { coord?: boolean } | undefined)?.coord === true,
+  )
   const workersOpen = createMemo(
     () => workersEnabled() && (tabs().active() === "workers" || tabs().all().includes("workers")),
   )
