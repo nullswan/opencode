@@ -214,7 +214,14 @@ export const SettingsPermissions: Component = () => {
         <div class="flex flex-col gap-2">
           <h3 class="text-14-medium text-text-strong">{language.t("settings.permissions.section.tools")}</h3>
           <div class="border border-border-weak-base rounded-lg overflow-hidden">
-            <For each={[...ITEMS, ...(globalSync.data.config.experimental?.coord === true ? coordItems : [])]}>
+            <For
+              each={[
+                ...ITEMS,
+                ...(((globalSync.data.config.experimental as { coord?: boolean } | undefined)?.coord === true
+                  ? coordItems
+                  : []) as typeof coordItems),
+              ]}
+            >
               {(item) => (
                 <SettingsRow title={language.t(item.title)} description={language.t(item.description)}>
                   <Select
