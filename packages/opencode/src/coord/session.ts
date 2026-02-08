@@ -1,8 +1,10 @@
 import { Storage } from "@/storage/storage"
 import { BusEvent } from "@/bus/bus-event"
 import { Bus } from "@/bus"
+import { Storage } from "@/storage/storage"
 import z from "zod"
 import * as CoordTeam from "./team"
+import * as CoordSummary from "./summary"
 
 export const SessionTeam = z.object({
   sessionID: z.string(),
@@ -48,3 +50,5 @@ export async function clearTeam(teamID: string) {
   await Promise.all(targets.map((link) => Storage.remove(["coord", "session", link.sessionID])))
   return targets.map((link) => link.sessionID)
 }
+
+export const SessionCoordResponse = CoordSummary.TeamSummary.nullable().meta({ ref: "SessionCoord" })
