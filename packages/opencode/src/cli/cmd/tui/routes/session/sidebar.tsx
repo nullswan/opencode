@@ -19,7 +19,9 @@ export function Sidebar(props: { sessionID: string; overlay?: boolean }) {
   const session = createMemo(() => sync.session.get(props.sessionID)!)
   const diff = createMemo(() => sync.data.session_diff[props.sessionID] ?? [])
   const todo = createMemo(() => sync.data.todo[props.sessionID] ?? [])
-  const coord = createMemo(() => sync.data.coord[props.sessionID] ?? null)
+  const coord = createMemo(() =>
+    sync.data.config.experimental?.coord === true ? sync.data.coord[props.sessionID] ?? null : null,
+  )
   const messages = createMemo(() => sync.data.message[props.sessionID] ?? [])
 
   const [expanded, setExpanded] = createStore({

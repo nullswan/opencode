@@ -269,6 +269,7 @@ export default function Page() {
     tabs().open(next)
 
     if (next === "workers") {
+      if (!workersEnabled()) return
       openReviewPanel()
       return
     }
@@ -887,7 +888,10 @@ export default function Page() {
   }
 
   const contextOpen = createMemo(() => tabs().active() === "context" || tabs().all().includes("context"))
-  const workersOpen = createMemo(() => tabs().active() === "workers" || tabs().all().includes("workers"))
+  const workersEnabled = createMemo(() => sync.data.config.experimental?.coord === true)
+  const workersOpen = createMemo(
+    () => workersEnabled() && (tabs().active() === "workers" || tabs().all().includes("workers")),
+  )
   const openedTabs = createMemo(() =>
     tabs()
       .all()
@@ -895,6 +899,7 @@ export default function Page() {
   )
 
   const workersSummary = createMemo(() => {
+    if (!workersEnabled()) return
     const id = params.id
     if (!id) return
     return sync.data.coord[id]
@@ -1255,6 +1260,7 @@ export default function Page() {
   })
 
   createEffect(() => {
+    if (!workersEnabled()) return
     const id = params.id
     if (!id) return
     if (sync.data.coord[id] !== undefined) return

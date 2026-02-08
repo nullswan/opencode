@@ -103,6 +103,9 @@ const ITEMS = [
     title: "settings.permissions.tool.doom_loop.title",
     description: "settings.permissions.tool.doom_loop.description",
   },
+] as const
+
+const coordItems = [
   {
     id: "coord_team",
     title: "settings.permissions.tool.coord_team.title",
@@ -211,7 +214,7 @@ export const SettingsPermissions: Component = () => {
         <div class="flex flex-col gap-2">
           <h3 class="text-14-medium text-text-strong">{language.t("settings.permissions.section.tools")}</h3>
           <div class="border border-border-weak-base rounded-lg overflow-hidden">
-            <For each={ITEMS}>
+            <For each={[...ITEMS, ...(globalSync.data.config.experimental?.coord ? coordItems : [])]}>
               {(item) => (
                 <SettingsRow title={language.t(item.title)} description={language.t(item.description)}>
                   <Select

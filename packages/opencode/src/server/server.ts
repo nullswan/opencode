@@ -222,7 +222,7 @@ export namespace Server {
         .route("/config", ConfigRoutes())
         .route("/experimental", ExperimentalRoutes())
         .route("/session", SessionRoutes())
-        .route("/coord", CoordRoutes())
+        .route("/coord", Flag.OPENCODE_ENABLE_COORD ? CoordRoutes() : new Hono())
         .route("/permission", PermissionRoutes())
         .route("/question", QuestionRoutes())
         .route("/provider", ProviderRoutes())

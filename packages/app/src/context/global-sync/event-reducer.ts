@@ -156,6 +156,7 @@ export function applyDirectoryEvent(input: {
       break
     }
     case "coord.summary.updated": {
+      if (input.store.config.experimental?.coord !== true) break
       const props = event.properties as { sessionID: string; summary: CoordTeamSummary }
       input.setStore("coord", props.sessionID, reconcile(props.summary))
       break

@@ -195,6 +195,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           break
 
         case "coord.summary.updated":
+          if (store.config.experimental?.coord !== true) break
           setStore("coord", event.properties.sessionID, reconcile(event.properties.summary))
           break
 
@@ -456,7 +457,9 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
             sdk.client.session.messages({ sessionID, limit: 100 }),
             sdk.client.session.todo({ sessionID }),
             sdk.client.session.diff({ sessionID }),
-            sdk.client.session.coord({ sessionID }),
+            store.config.experimental?.coord === true
+              ? sdk.client.session.coord({ sessionID })
+              : Promise.resolve({ data: null }),
           ])
           setStore(
             produce((draft) => {
