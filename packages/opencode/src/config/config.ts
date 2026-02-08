@@ -235,6 +235,10 @@ export namespace Config {
       result.compaction = { ...result.compaction, prune: false }
     }
 
+    if (Flag.OPENCODE_ENABLE_COORD) {
+      result.experimental = { ...result.experimental, coord: true }
+    }
+
     result.plugin = deduplicatePlugins(result.plugin ?? [])
 
     return {
@@ -1182,6 +1186,10 @@ export namespace Config {
             .positive()
             .optional()
             .describe("Timeout in milliseconds for model context protocol (MCP) requests"),
+          coord: z
+            .boolean()
+            .optional()
+            .describe("Enable coordination features (default: false)"),
         })
         .optional(),
     })

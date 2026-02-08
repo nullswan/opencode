@@ -22,6 +22,7 @@ import { Snapshot } from "@/snapshot"
 import type { Provider } from "@/provider/provider"
 import { PermissionNext } from "@/permission/next"
 import { Global } from "@/global"
+import { CoordSession, CoordSummary } from "@/coord"
 
 export namespace Session {
   const log = Log.create({ service: "session" })
@@ -243,6 +244,9 @@ export namespace Session {
     Bus.publish(Event.Updated, {
       info: result,
     })
+    const coord = await CoordSession.getTeam(result.id).catch(() => undefined)
+    if (coord && Flag.OPENCODE_ENABLE_COORD) await CoordSummary.summarize(result.id, coord.teamID)
+
     return result
   }
 

@@ -17,6 +17,7 @@ import type {
   ProviderListResponse,
   ProviderAuthMethod,
   VcsInfo,
+  CoordTeamSummary,
 } from "@opencode-ai/sdk/v2"
 import { createStore, produce, reconcile } from "solid-js/store"
 import { useSDK } from "@tui/context/sdk"
@@ -57,6 +58,9 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
       todo: {
         [sessionID: string]: Todo[]
       }
+      coord: {
+        [sessionID: string]: CoordTeamSummary | null
+      }
       message: {
         [sessionID: string]: Message[]
       }
@@ -92,6 +96,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
       session_status: {},
       session_diff: {},
       todo: {},
+      coord: {},
       message: {},
       part: {},
       lsp: [],
@@ -185,9 +190,15 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
           break
         }
 
-        case "todo.updated":
+         case "todo.updated":
           setStore("todo", event.properties.sessionID, event.properties.todos)
           break
+
+        case "coord.summary.updated":
+          if ((store.config.experimental as { coord?: boolean } | undefined)?.coord !== true) break
+          setStore("coord", event.properties.sessionID, reconcile(event.properties.summary))
+          break
+
 
         case "session.diff":
           setStore("session_diff", event.properties.sessionID, event.properties.diff)
@@ -441,11 +452,14 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
         },
         async sync(sessionID: string) {
           if (fullSyncedSessions.has(sessionID)) return
-          const [session, messages, todo, diff] = await Promise.all([
+          const [session, messages, todo, diff, coord] = await Promise.all([
             sdk.client.session.get({ sessionID }, { throwOnError: true }),
             sdk.client.session.messages({ sessionID, limit: 100 }),
             sdk.client.session.todo({ sessionID }),
             sdk.client.session.diff({ sessionID }),
+            (store.config.experimental as { coord?: boolean } | undefined)?.coord === true
+              ? sdk.client.session.coord({ sessionID })
+              : Promise.resolve({ data: null }),
           ])
           setStore(
             produce((draft) => {
@@ -453,6 +467,7 @@ export const { use: useSync, provider: SyncProvider } = createSimpleContext({
               if (match.found) draft.session[match.index] = session.data!
               if (!match.found) draft.session.splice(match.index, 0, session.data!)
               draft.todo[sessionID] = todo.data ?? []
+              draft.coord[sessionID] = coord.data ?? null
               draft.message[sessionID] = messages.data!.map((x) => x.info)
               for (const message of messages.data!) {
                 draft.part[message.info.id] = message.parts

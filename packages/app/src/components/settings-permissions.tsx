@@ -105,6 +105,34 @@ const ITEMS = [
   },
 ] as const
 
+const coordItems = [
+  {
+    id: "coord_team",
+    title: "settings.permissions.tool.coord_team.title",
+    description: "settings.permissions.tool.coord_team.description",
+  },
+  {
+    id: "coord_member",
+    title: "settings.permissions.tool.coord_member.title",
+    description: "settings.permissions.tool.coord_member.description",
+  },
+  {
+    id: "coord_message",
+    title: "settings.permissions.tool.coord_message.title",
+    description: "settings.permissions.tool.coord_message.description",
+  },
+  {
+    id: "coord_task",
+    title: "settings.permissions.tool.coord_task.title",
+    description: "settings.permissions.tool.coord_task.description",
+  },
+  {
+    id: "coord_session",
+    title: "settings.permissions.tool.coord_session.title",
+    description: "settings.permissions.tool.coord_session.description",
+  },
+] as const
+
 const VALID_ACTIONS = new Set<PermissionAction>(["allow", "ask", "deny"])
 
 function toMap(value: unknown): PermissionMap {
@@ -186,7 +214,14 @@ export const SettingsPermissions: Component = () => {
         <div class="flex flex-col gap-2">
           <h3 class="text-14-medium text-text-strong">{language.t("settings.permissions.section.tools")}</h3>
           <div class="border border-border-weak-base rounded-lg overflow-hidden">
-            <For each={ITEMS}>
+            <For
+              each={[
+                ...ITEMS,
+                ...(((globalSync.data.config.experimental as { coord?: boolean } | undefined)?.coord === true
+                  ? coordItems
+                  : []) as typeof coordItems),
+              ]}
+            >
               {(item) => (
                 <SettingsRow title={language.t(item.title)} description={language.t(item.description)}>
                   <Select
