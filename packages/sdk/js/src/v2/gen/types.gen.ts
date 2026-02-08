@@ -1877,6 +1877,10 @@ export type Config = {
      * Timeout in milliseconds for model context protocol (MCP) requests
      */
     mcp_timeout?: number
+    /**
+     * Enable coordination features (default: false)
+     */
+    coord?: boolean
   }
 }
 

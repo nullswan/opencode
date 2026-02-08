@@ -250,6 +250,68 @@ export namespace Session {
     return result
   }
 
+  export function plan(input: { slug: string; time: { created: number } }) {
+    const base = Instance.project.vcs
+      ? path.join(Instance.worktree, ".opencode", "plans")
+      : path.join(Global.Path.data, "plans")
+    return path.join(base, [input.time.created, input.slug].join("-") + ".md")
+  }
+
+  export const get = fn(Identifier.schema("session"), async (id) => {
+    const read = await Storage.read<Info>(["session", Instance.project.id, id])
+    return read as Info
+  })
+
+  export const getShare = fn(Identifier.schema("session"), async (id) => {
+    return Storage.read<ShareInfo>(["share", id])
+  })
+
+  export const share = fn(Identifier.schema("session"), async (id) => {
+    const cfg = await Config.get()
+    if (cfg.share === "disabled") {
+      throw new Error("Sharing is disabled in configuration")
+    }
+    const { ShareNext } = await import("@/share/share-next")
+    const share = await ShareNext.create(id)
+    await update(
+      id,
+      (draft) => {
+        draft.share = {
+          url: share.url,
+        }
+      },
+      { touch: false },
+    )
+    return share
+  })
+
+  export const unshare = fn(Identifier.schema("session"), async (id) => {
+    // Use ShareNext to remove the share (same as share function uses ShareNext to create)
+    const { ShareNext } = await import("@/share/share-next")
+    await ShareNext.remove(id)
+    await update(
+      id,
+      (draft) => {
+        draft.share = undefined
+      },
+      { touch: false },
+    )
+  })
+
+  export async function update(id: string, editor: (session: Info) => void, options?: { touch?: boolean }) {
+    const project = Instance.project
+    const result = await Storage.update<Info>(["session", project.id, id], (draft) => {
+      editor(draft)
+      if (options?.touch !== false) {
+        draft.time.updated = Date.now()
+      }
+    })
+    Bus.publish(Event.Updated, {
+      info: result,
+    })
+    return result
+  }
+
   export const diff = fn(Identifier.schema("session"), async (sessionID) => {
     const diffs = await Storage.read<Snapshot.FileDiff[]>(["session_diff", sessionID])
     return diffs ?? []
